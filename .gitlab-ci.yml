@@ -1,0 +1,41 @@
+stages:
+  - install
+  - test
+  - build
+
+variables:
+  NODE_ENV: 'production'
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
+    - vendor/
+
+install_dependencies:
+  stage: install
+  script:
+    - echo "Installing backend and frontend dependencies"
+    - composer install --prefer-dist --no-interaction --no-progress --optimize-autoloader
+    - npm ci || yarn install
+
+php_lint:
+  stage: test
+  script:
+    - echo "Running PHP lint"
+    - vendor/bin/phpcs --standard=PSR12 app/ routes/ resources/ tests/
+
+js_lint:
+  stage: test
+  script:
+    - echo "Running JS lint"
+    - npm run lint
+
+build_frontend:
+  stage: build
+  script:
+    - echo "Building frontend"
+    - npm run build
+  artifacts:
+    paths:
+      - dist/ 
